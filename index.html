@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusConnect — Every College. Every Event. One Platform.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- RBAC Role Sandbox Switcher -->
+  <div class="rbac-bar">
+    <div class="rbac-inner">
+      <div>
+        <strong>RBAC Security Sandbox:</strong>
+        <span id="current-role-badge">Student • Aarav Sharma</span>
+      </div>
+      <div class="role-pill-group">
+        <button class="role-btn" onclick="switchRole('visitor', this)">Visitor</button>
+        <button class="role-btn active" onclick="switchRole('student', this)">Student</button>
+        <button class="role-btn" onclick="switchRole('college_admin', this)">College Admin</button>
+        <button class="role-btn" onclick="switchRole('super_admin', this)">Super Admin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Navigation Bar -->
+  <header class="navbar">
+    <div class="container nav-inner">
+      <button class="brand" onclick="showView('home')">
+        <div class="brand-icon">CC</div>
+        <div style="text-align:left;">
+          <div class="brand-title" style="font-weight:800;font-size:1.1rem;">Campus<span>Connect</span></div>
+          <div style="font-size:0.68rem;color:var(--text-muted);">Every College. Every Event.</div>
+        </div>
+      </button>
+
+      <nav class="nav-links">
+        <button class="nav-link active" data-nav="home" onclick="showView('home')">Home</button>
+        <button class="nav-link" data-nav="colleges" onclick="showView('colleges')">Explore Colleges</button>
+        <button class="nav-link" data-nav="events" onclick="showView('events')">Discover Events</button>
+        <button class="nav-link" data-nav="dashboard" onclick="showView('dashboard')">Dashboard</button>
+        <button class="btn btn-outline" onclick="toggleTheme()" id="theme-btn">Light Mode</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- VIEW 1: HOMEPAGE -->
+  <main id="view-home">
+    <section class="hero">
+      <div class="container">
+        <span class="hero-badge">Every College. Every Event. One Platform.</span>
+        <h1>Discover What's Happening Across <span class="gradient-text">India's Colleges.</span></h1>
+        <p>Explore college festivals, coding competitions, hackathons, sports tournaments, workshops, and exciting campus experiences — all in one centralized platform.</p>
+
+        <div class="search-box">
+          <input type="text" id="global-search" class="search-input" placeholder="Search hackathons, fests, cities, or colleges..." oninput="filterAll()">
+          <button class="btn btn-primary" onclick="showView('events')">Discover Events</button>
+          <button class="btn btn-outline" onclick="showView('colleges')">Explore Colleges</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="card">
+            <div style="font-size:1.75rem;font-weight:800;" id="stat-colleges">3</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);">Verified Colleges</div>
+          </div>
+          <div class="card">
+            <div style="font-size:1.75rem;font-weight:800;" id="stat-events">3</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);">Published Events</div>
+          </div>
+          <div class="card">
+            <div style="font-size:1.75rem;font-weight:800;" id="stat-regs">2</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);">Confirmed Registrations</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container">
+      <div class="section-header">
+        <div>
+          <h2>Trending & Upcoming Campus Events</h2>
+          <p style="font-size:0.85rem;color:var(--text-muted);">Register directly on CampusConnect with unique reference IDs.</p>
+        </div>
+        <button class="btn btn-outline" onclick="showView('events')">View All Events →</button>
+      </div>
+      <div class="grid-3" id="home-events-grid"></div>
+    </section>
+  </main>
+
+  <!-- VIEW 2: EXPLORE COLLEGES -->
+  <section id="view-colleges" class="section container hidden">
+    <div class="section-header">
+      <div>
+        <h2>Verified Participating Colleges</h2>
+        <p style="font-size:0.85rem;color:var(--text-muted);">Every institution is reviewed and verified by CampusConnect Super Admins.</p>
+      </div>
+      <input type="text" id="college-search" class="form-control" style="max-width:280px;" placeholder="Filter colleges by name or city..." oninput="renderColleges()">
+    </div>
+    <div class="grid-3" id="colleges-grid"></div>
+  </section>
+
+  <!-- VIEW 3: DISCOVER EVENTS -->
+  <section id="view-events" class="section container hidden">
+    <div class="section-header">
+      <div>
+        <h2>Discover Events Across India</h2>
+        <p style="font-size:0.85rem;color:var(--text-muted);">Filter by category or keyword.</p>
+      </div>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+        <select id="category-filter" class="form-control" style="width:auto;" onchange="renderEvents()">
+          <option value="All">All Categories</option>
+          <option value="Hackathons">Hackathons</option>
+          <option value="Cultural Festivals">Cultural Festivals</option>
+          <option value="Workshops">Workshops</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid-3" id="events-grid"></div>
+  </section>
+
+  <!-- VIEW 4: ROLE DASHBOARD -->
+  <section id="view-dashboard" class="section container hidden">
+    <div id="dashboard-content"></div>
+  </section>
+
+  <!-- REGISTRATION MODAL -->
+  <div class="modal-backdrop" id="reg-modal">
+    <div class="modal-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 id="modal-event-title">Register for Event</h3>
+        <button class="btn btn-outline" style="padding:0.3rem 0.65rem;" onclick="closeModal()">✕</button>
+      </div>
+      <form onsubmit="submitRegistration(event)">
+        <input type="hidden" id="modal-event-id">
+        <div class="form-group">
+          <label class="form-label">Student Full Name *</label>
+          <input type="text" id="reg-name" class="form-control" value="Aarav Sharma" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">College Email *</label>
+          <input type="email" id="reg-email" class="form-control" value="aarav.sharma@student-demo.edu.in" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Home College *</label>
+          <input type="text" id="reg-college" class="form-control" value="Indraprastha School of Design & Computing (DEMO)" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Team Name (if applicable)</label>
+          <input type="text" id="reg-team" class="form-control" placeholder="e.g., ByteBuilders">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;">Confirm Registration</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST MESSAGE -->
+  <div id="toast" class="toast"></div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container" style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;">
+      <div>
+        <strong>CampusConnect</strong> — Every College. Every Event. One Platform.
+      </div>
+      <div>Separated HTML + CSS Architecture (Demo Content Labeled)</div>
+    </div>
+  </footer>
+
+  <script>
+    let currentRole = 'student';
+
+    const colleges = [
+      {
+        id: 'col-1',
+        name: 'Sahyadri Institute of Technology (DEMO)',
+        city: 'Mangaluru',
+        state: 'Karnataka',
+        type: 'Autonomous Engineering College',
+        description: 'Premier autonomous engineering & management campus fostering student-led innovation and hackathons. [DEMO]',
+        status: 'verified'
+      },
+      {
+        id: 'col-2',
+        name: 'Deccan College of Arts, Science & Tech (DEMO)',
+        city: 'Pune',
+        state: 'Maharashtra',
+        type: 'State University Constituent',
+        description: 'Multi-disciplinary campus hosting national cultural festivals and policy summits. [DEMO]',
+        status: 'verified'
+      },
+      {
+        id: 'col-3',
+        name: 'Indraprastha School of Design & Computing (DEMO)',
+        city: 'New Delhi',
+        state: 'Delhi',
+        type: 'Deemed University',
+        description: 'Interdisciplinary technology and design hub focused on human-centered computing. [DEMO]',
+        status: 'verified'
+      }
+    ];
+
+    const events = [
+      {
+        id: 'evt-1',
+        collegeId: 'col-1',
+        title: 'HackSahyadri 2026: 36-Hour National Hackathon',
+        category: 'Hackathons',
+        date: '12 Dec 2026',
+        city: 'Mangaluru, Karnataka',
+        fee: 'Free Entry',
+        capacity: 120,
+        registered: 84,
+        poster: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&fit=crop'
+      },
+      {
+        id: 'evt-2',
+        collegeId: 'col-2',
+        title: 'Rangmanch 2026: Inter-Collegiate Cultural Fest',
+        category: 'Cultural Festivals',
+        date: '18 Dec 2026',
+        city: 'Pune, Maharashtra',
+        fee: '₹500 (Organizer Desk)',
+        capacity: 60,
+        registered: 42,
+        poster: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&fit=crop'
+      },
+      {
+        id: 'evt-3',
+        collegeId: 'col-3',
+        title: 'DesignSystems & Applied GenAI Workshop',
+        category: 'Workshops',
+        date: '05 Dec 2026',
+        city: 'New Delhi, Delhi',
+        fee: 'Free Entry',
+        capacity: 100,
+        registered: 98,
+        poster: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&fit=crop'
+      }
+    ];
+
+    const registrations = [
+      {
+        ref: 'CC-2026-8492A',
+        eventId: 'evt-1',
+        studentName: 'Aarav Sharma',
+        email: 'aarav.sharma@student-demo.edu.in',
+        college: 'Indraprastha School of Design & Computing (DEMO)',
+        team: 'ByteBuilders',
+        status: 'Confirmed'
+      },
+      {
+        ref: 'CC-2026-3910B',
+        eventId: 'evt-1',
+        studentName: 'Meera Krishnan',
+        email: 'meera.k@coromandel-demo.edu.in',
+        college: 'Coromandel Engineering Academy (DEMO)',
+        team: 'AeroPulse',
+        status: 'Confirmed'
+      }
+    ];
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 3500);
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const btn = document.getElementById('theme-btn');
+      if (html.classList.contains('light')) {
+        html.classList.remove('light');
+        btn.textContent = 'Light Mode';
+      } else {
+        html.classList.add('light');
+        btn.textContent = 'Dark Mode';
+      }
+    }
+
+    function switchRole(role, btnEl) {
+      currentRole = role;
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+
+      const labels = {
+        visitor: 'Public Visitor (Unauthenticated)',
+        student: 'Student • Aarav Sharma',
+        college_admin: 'College Admin • Sahyadri Institute',
+        super_admin: 'Super Admin • Governance Root'
+      };
+      document.getElementById('current-role-badge').textContent = labels[role];
+      showToast(`Switched active role to ${labels[role]}`);
+      renderDashboard();
+    }
+
+    function showView(viewId) {
+      ['home', 'colleges', 'events', 'dashboard'].forEach(v => {
+        document.getElementById(`view-${v}`).classList.add('hidden');
+      });
+      document.getElementById(`view-${viewId}`).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-link').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.nav === viewId);
+      });
+
+      if (viewId === 'colleges') renderColleges();
+      if (viewId === 'events') renderEvents();
+      if (viewId === 'dashboard') renderDashboard();
+    }
+
+    function buildEventCardHTML(evt) {
+      const col = colleges.find(c => c.id === evt.collegeId);
+      const spotsLeft = Math.max(0, evt.capacity - evt.registered);
+      return `
+        <article class="card">
+          <img src="${evt.poster}" alt="${evt.title}" class="event-poster">
+          <div style="display:flex;gap:0.4rem;margin-bottom:0.6rem;">
+            <span class="badge badge-purple">${evt.category}</span>
+            <span class="badge badge-open">${spotsLeft} spots left</span>
+          </div>
+          <h3 style="font-size:1.05rem;margin-bottom:0.35rem;">${evt.title}</h3>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.35rem;">${col ? col.name : ''}</p>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.9rem;">📅 ${evt.date} • 📍 ${evt.city}</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong style="font-size:0.82rem;color:var(--emerald);">${evt.fee}</strong>
+            <button class="btn btn-primary" onclick="openModal('${evt.id}')">Register Now</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderHomeEvents() {
+      const q = (document.getElementById('global-search')?.value || '').toLowerCase();
+      const filtered = events.filter(e => !q || e.title.toLowerCase().includes(q) || e.city.toLowerCase().includes(q));
+      document.getElementById('home-events-grid').innerHTML = filtered.map(buildEventCardHTML).join('');
+      document.getElementById('stat-regs').textContent = registrations.length;
+    }
+
+    function renderColleges() {
+      const q = (document.getElementById('college-search')?.value || '').toLowerCase();
+      const filtered = colleges.filter(c => !q || c.name.toLowerCase().includes(q) || c.city.toLowerCase().includes(q));
+      document.getElementById('colleges-grid').innerHTML = filtered.map(c => `
+        <article class="card">
+          <span class="badge badge-open" style="margin-bottom:0.6rem;">✓ Verified Institution</span>
+          <h3 style="font-size:1.05rem;margin-bottom:0.3rem;">${c.name}</h3>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.6rem;">📍 ${c.city}, ${c.state} • ${c.type}</p>
+          <p style="font-size:0.82rem;color:var(--text-muted);">${c.description}</p>
+        </article>
+      `).join('');
+    }
+
+    function renderEvents() {
+      const cat = document.getElementById('category-filter')?.value || 'All';
+      const filtered = events.filter(e => cat === 'All' || e.category === cat);
+      document.getElementById('events-grid').innerHTML = filtered.map(buildEventCardHTML).join('');
+    }
+
+    function filterAll() {
+      renderHomeEvents();
+    }
+
+    function openModal(eventId) {
+      if (currentRole !== 'student') {
+        showToast('Switch to the Student role in the top bar to register for events.');
+        return;
+      }
+      const evt = events.find(e => e.id === eventId);
+      document.getElementById('modal-event-id').value = evt.id;
+      document.getElementById('modal-event-title').textContent = `Register: ${evt.title}`;
+      document.getElementById('reg-modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('reg-modal').classList.remove('open');
+    }
+
+    function submitRegistration(e) {
+      e.preventDefault();
+      const eventId = document.getElementById('modal-event-id').value;
+      const evt = events.find(item => item.id === eventId);
+      const duplicate = registrations.find(r => r.eventId === eventId && r.studentName === document.getElementById('reg-name').value);
+      if (duplicate) {
+        showToast('Duplicate blocked: You are already registered for this event.');
+        closeModal();
+        return;
+      }
+      const ref = 'CC-2026-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+      registrations.unshift({
+        ref,
+        eventId,
+        studentName: document.getElementById('reg-name').value,
+        email: document.getElementById('reg-email').value,
+        college: document.getElementById('reg-college').value,
+        team: document.getElementById('reg-team').value || 'Individual',
+        status: 'Confirmed'
+      });
+      evt.registered += 1;
+      closeModal();
+      renderHomeEvents();
+      showToast(`Confirmed! Reference ID: ${ref}`);
+    }
+
+    function renderDashboard() {
+      const container = document.getElementById('dashboard-content');
+      if (currentRole === 'visitor') {
+        container.innerHTML = `
+          <div class="card" style="text-align:center;padding:3rem;">
+            <h3>Authentication Required</h3>
+            <p style="color:var(--text-muted);margin-top:0.5rem;">Select Student, College Admin, or Super Admin from the top RBAC bar to access role-protected dashboards.</p>
+          </div>`;
+        return;
+      }
+
+      if (currentRole === 'student') {
+        const myRegs = registrations.filter(r => r.studentName === 'Aarav Sharma');
+        container.innerHTML = `
+          <h2 style="margin-bottom:1rem;">Student Dashboard • My Registrations</h2>
+          <div class="card" style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr><th>Reference ID</th><th>Event</th><th>Team</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                ${myRegs.map(r => {
+                  const evt = events.find(e => e.id === r.eventId);
+                  return `<tr>
+                    <td><strong>${r.ref}</strong></td>
+                    <td>${evt ? evt.title : ''}</td>
+                    <td>${r.team}</td>
+                    <td><span class="badge badge-open">${r.status}</span></td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>`;
+        return;
+      }
+
+      if (currentRole === 'college_admin') {
+        const scopedRegs = registrations.filter(r => r.eventId === 'evt-1');
+        container.innerHTML = `
+          <div class="section-header">
+            <div>
+              <h2>College Admin Workspace • Sahyadri Institute (RLS Scoped)</h2>
+              <p style="font-size:0.82rem;color:var(--text-muted);">Viewing registrations strictly scoped to your assigned college.</p>
+            </div>
+            <button class="btn btn-primary" onclick="exportCSV()">Export Scoped CSV</button>
+          </div>
+          <div class="card" style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr><th>Ref ID</th><th>Student</th><th>Home College</th><th>Team</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                ${scopedRegs.map(r => `
+                  <tr>
+                    <td><strong>${r.ref}</strong></td>
+                    <td>${r.studentName}<br><small style="color:var(--text-muted)">${r.email}</small></td>
+                    <td>${r.college}</td>
+                    <td>${r.team}</td>
+                    <td><span class="badge badge-open">${r.status}</span></td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`;
+        return;
+      }
+
+      if (currentRole === 'super_admin') {
+        container.innerHTML = `
+          <h2 style="margin-bottom:1rem;">Super Admin Governance Console</h2>
+          <div class="card">
+            <h3 style="margin-bottom:0.5rem;">Verified Colleges Registry (${colleges.length})</h3>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1rem;">All public institutions verified with immutable audit logging.</p>
+            <table>
+              <thead>
+                <tr><th>Institution Name</th><th>Location</th><th>Type</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                ${colleges.map(c => `
+                  <tr>
+                    <td><strong>${c.name}</strong></td>
+                    <td>${c.city}, ${c.state}</td>
+                    <td>${c.type}</td>
+                    <td><span class="badge badge-open">${c.status}</span></td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>`;
+      }
+    }
+
+    function exportCSV() {
+      const headers = ['Reference', 'Student', 'Email', 'College', 'Team', 'Status'];
+      const rows = registrations.filter(r => r.eventId === 'evt-1').map(r =>
+        [r.ref, `"${r.studentName}"`, r.email, `"${r.college}"`, `"${r.team}"`, r.status].join(',')
+      );
+      const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sahyadri_registrations.csv';
+      a.click();
+      showToast('Scoped registrations CSV exported!');
+    }
+
+    renderHomeEvents();
+  </script>
+</body>
+</html>
